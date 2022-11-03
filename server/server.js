@@ -8,6 +8,23 @@ app.use(express.static('server/public/'))
 let bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
+let resultHistory = [
+  {
+    num1: 4,
+    num2: 3,
+    oper: '*',
+    result: 12 },
+  {
+    num1: 5,
+    num2: 2,
+    oper: '+',
+    result: 7 }
+]
+
+app.get('/print', (req, res) => {
+  console.log('in /print route');
+  res.send(resultHistory);
+})
 
 // set up listener
 app.listen(port, () => {
