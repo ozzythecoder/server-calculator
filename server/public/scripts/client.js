@@ -2,6 +2,7 @@ $( document ).ready(onReady)
 
 function onReady() {
   console.log('jQ');
+  getGlobalVars();
   getStuff();
   clearCalculator();
 
@@ -51,11 +52,17 @@ function sendEquation() {
 
 }
 
+function getGlobalVars() {
+  let equationToSend = [];
+  let firstOperand = true;
+}
+
 function clearCalculator() {
 
   equationToSend = [];
   firstOperand = true;
   $( '#number-display' ).empty();
+  
 }
 
 function processValue() {
@@ -68,8 +75,9 @@ function processValue() {
   }
   
   if (val == '=') {
-    pushOperand();
-    sendEquals(); // time to do math!
+    if (pushOperand()) { // if operand is not blank
+      sendEquals(); // time to do the math!
+    }
     return false; // exit function
   }
 
@@ -77,21 +85,25 @@ function processValue() {
   if (/[*+/-]/.test(val)) {
     console.log('operator button clicked');
 
-    // if this is our first operation,
-    if (firstOperand) {
-      pushOperand(); // push value to equation
-      equationToSend.push(val); // push operator to equation
-      firstOperand = false; // prevent further operators
-
-      console.log(equationToSend);
+    // if this is our first operation, and current value isn't blank
+    if (firstOperand && $( '#number-display' ).text() !== '') {
+      handleOperator(val); // handle operator
     } else { // otherwise, throw error
       handleError('operand');
     }
+
   } else { // it's a number.
     $('#number-display' ).append(val);
   }
 
+}
 
+function handleOperator(operator) {
+  pushOperand(); // push value to equation
+  equationToSend.push(operator); // push operator to equation
+  firstOperand = false; // prevent further operators
+
+  console.log(equationToSend);
 }
 
 function handleError(errorCode) {
@@ -104,18 +116,59 @@ function handleError(errorCode) {
 
 function pushOperand() { // determines end of the first value
   let currentNum = $( '#number-display' ).text();
-  equationToSend.push(currentNum);
-  $( '#number-display' ).empty();
+
+  if (currentNum == '') {
+    handleError('blank')
+    return false;
+  } else {
+    equationToSend.push(currentNum);
+    $( '#number-display' ).empty();
+    return true;
+  }
 }
 
 function sendEquals() {
 
   console.log('in sendEquals');
   console.log('equation:', equationToSend);
-  
+
+  let fullEquation = {  
+    num1: equationToSend[0],
+    num2: equationToSend[1],
+    oper: equationToSend[2]
+  }
+
   // app post request
   // send array
 
+  $.ajax({
+    method: 'POST',
+    url: '/calc',
+    data: fullEquation
+  }).then( (res) => {
+    console.log('post made!');
+    getLatest();
+    getStuff();
+  }).catch( (err) => {
+    console.log('fucky wucky');
+  })
+
+}
+
+function getLatest() {
+  $.ajax({
+    method: 'GET',
+    url: '/latest'
+  }).then ( (res) => {
+    console.log('got latest equation!');
+    appendResultToCalc(res);
+  }).catch( (err) => {
+    console.log('what!', err);
+  })
+}
+
+function appendResultToCalc(object) {
+  console.log('appendresulttocalc:', object.result);
 }
 
 function clearInputs() {

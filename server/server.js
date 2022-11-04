@@ -9,7 +9,12 @@ let bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // set up global variables
-let resultHistory = [];
+let resultHistory = [{
+  num1: 2,
+  num2: 4,
+  oper: '+',
+  result: 6
+}];
 const doTheMath = { // this will handle mathematical operations
   '+': function(a, b) { return a + b },
   '-': function(a, b) { return a - b },
@@ -20,6 +25,7 @@ const doTheMath = { // this will handle mathematical operations
 // handle GET request - return array of previous operations
 app.get('/print', (req, res) => {
   res.send(resultHistory);
+  console.log(resultHistory[resultHistory.length - 1].result); // expecting 6
 })
 
 app.post('/math', (req, res) => {
@@ -37,6 +43,22 @@ app.post('/math', (req, res) => {
 
   resultHistory.push(mathObj); // push completed object to the array
   res.sendStatus(200); // confirm post request
+})
+
+app.post('/calc', (req, res) => {
+  
+  let mathObj = req.body;
+  console.log(mathObj.num1);
+
+  mathObj.result = doTheMath[mathObj.oper](Number(mathObj.num1), Number(mathObj.num2));
+  resultHistory.push(mathObj)
+  res.sendStatus(200);
+})
+
+app.get('/latest', (req, res) => {
+  let lastResult = resultHistory[resultHistory.length - 1]
+  console.log(lastResult);
+  res.send(lastResult);
 })
 
 // set up listener
