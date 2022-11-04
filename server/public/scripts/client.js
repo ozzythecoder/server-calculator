@@ -50,8 +50,8 @@ function sendEquation() {
 }
 
 function clearInputs() {
-  $( 'input' ).val();
-  $( 'select' ).val();
+  $( 'input' ).val('');
+  $( 'select' ).val('');
 }
 
 function clearResults() { $( '#results-history' ).empty() };

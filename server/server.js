@@ -8,38 +8,35 @@ app.use(express.static('server/public/'))
 let bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
-let resultHistory = [
-  {
-    num1: 4,
-    num2: 3,
-    oper: '*',
-    result: 12 },
-  {
-    num1: 5,
-    num2: 2,
-    oper: '+',
-    result: 7 }
-]
-
-const doTheMath = {
+// set up global variables
+let resultHistory = [];
+const doTheMath = { // this will handle mathematical operations
   '+': function(a, b) { return a + b },
   '-': function(a, b) { return a - b },
   '*': function(a, b) { return a * b },
   '/': function(a, b) { return a / b }
 }
 
+// handle GET request - return array of previous operations
 app.get('/print', (req, res) => {
-  console.log('in /print route');
   res.send(resultHistory);
 })
 
 app.post('/math', (req, res) => {
-  console.log('in /math route');
+  // get data as an object
   let mathObj = req.body;
-  
-  mathObj.result = doTheMath[mathObj.oper](Number(mathObj.num1),Number(mathObj.num2))
-  resultHistory.push(mathObj);
-  res.sendStatus(200);
+
+  // set the result equal to the operation of the two numbers,
+  // performed by executing the function at the value of mathObj.oper
+  // in the doTheMath object.
+  //
+  // example: doTheMath['+'](2, 4) would look at doTheMath['+'],
+  // use 2 and 4 as arguments in that function, and return 6.
+
+  mathObj.result = doTheMath[mathObj.oper](Number(mathObj.num1), Number(mathObj.num2))
+
+  resultHistory.push(mathObj); // push completed object to the array
+  res.sendStatus(200); // confirm post request
 })
 
 // set up listener
