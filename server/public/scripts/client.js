@@ -12,26 +12,10 @@ function onReady() {
   // event listeners for buttons
   $('.calc-button:not(#equals-btn)').on('click', processValue);
   $('#equals-btn').on('click', handleEquals);
+  $('#delete-history-btn').on('click', deleteHistory);
 }
 
-function render(arr) {
-  clearResults();
-  for (let equation of arr) {
-    $( '#results-history' ).prepend(`
-      <p>${equation.num1} ${equation.oper} ${equation.num2} = ${equation.result}</p>
-  `)}
-}
 
-function getStuff() {
-  $.ajax({
-    method: 'GET',
-    url: '/print'
-  }).then( (res) => {
-    render(res);
-  }).catch( (err) => {
-    console.log('butts :c');
-  })
-}
 
 // function sendEquation() {
 
@@ -52,6 +36,27 @@ function getStuff() {
 //   })
 
 // }
+
+function render(arr) {
+  clearResults();
+  for (let equation of arr) {
+    $( '#results-history' ).prepend(`
+      <p>${equation.num1} ${equation.oper} ${equation.num2} = ${equation.result}</p>
+  `)}
+}
+
+function getStuff() {
+  $.ajax({
+    method: 'GET',
+    url: '/print'
+  }).then( (res) => {
+    render(res);
+  }).catch( (err) => {
+    console.log('butts :c');
+  })
+}
+
+
 
 function clearCalculator() {
 
@@ -194,6 +199,19 @@ function appendResultToCalc(object) {
 
   clearCalculator();
   getStuff(); // get and render DOM
+}
+
+function deleteHistory() {
+  // ajax delete request
+  $.ajax({
+    method: 'DELETE',
+    url: '/delete'
+  }).then( (res) => {
+    console.log('deleted history');
+    getStuff();
+  }).catch( (err) => {
+    console.log('why do u hate me');
+  })
 }
 
 function clearInputs() {

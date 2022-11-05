@@ -54,7 +54,7 @@ app.post('/calc', (req, res) => {
 
   console.log('long result is', longRes);
 
-  mathObj.result = longRes.toString().substring(0,9) // limit result to 9 chars
+  mathObj.result = longRes.toString().substring(0,9) // limit result to 9 characters
   console.log('short result is', mathObj.result);
   resultHistory.push(mathObj)
   res.sendStatus(200);
@@ -63,6 +63,12 @@ app.post('/calc', (req, res) => {
 app.get('/latest', (req, res) => {
   let lastResult = resultHistory[resultHistory.length - 1]
   res.send(lastResult);
+})
+
+app.delete('/delete', (req, res) => {
+
+  resultHistory = [];
+  res.sendStatus(200)
 })
 
 // set up listener
