@@ -49,7 +49,8 @@ app.post('/calc', (req, res) => {
   
   let mathObj = req.body;
 
-  mathObj.result = doTheMath[mathObj.oper](Number(mathObj.num1), Number(mathObj.num2));
+  mathObj.result = doTheMath[mathObj.oper](Number(mathObj.num1), Number(mathObj.num2))
+
   resultHistory.push(mathObj)
   res.sendStatus(200);
 })
