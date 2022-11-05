@@ -3,7 +3,7 @@ $( document ).ready(onReady)
 function onReady() {
   console.log('jQ');
 
-  resultDisplay = false;
+  resultDisplay = false; // setting for calculator display
   getStuff();
   clearCalculator();
 
@@ -13,9 +13,23 @@ function onReady() {
 
   // listener for delete history button
   $('#delete-history-btn').on('click', deleteHistory);
+} // end onReady
+
+
+function getStuff() { // get equation history from server
+
+  $.ajax({
+    method: 'GET',
+    url: '/print'
+  }).then( (res) => {
+    render(res);
+  }).catch( (err) => {
+    console.log('render error!');
+  })
 }
 
-function render(arr) {
+function render(arr) { // append equation history to DOM
+
   let el = $( '#results-history' );
 
   const cuterOperators = { // adds the objectively cuter ÷ and × symbols
@@ -34,18 +48,6 @@ function render(arr) {
 
 }
 
-function getStuff() { // get equation history from server
-
-  $.ajax({
-    method: 'GET',
-    url: '/print'
-  }).then( (res) => {
-    render(res);
-  }).catch( (err) => {
-    console.log('render error!');
-  })
-}
-
 function clearCalculator() { // clear calculator and client-side memory
   equationToSend = [];
   firstOperand = true;
@@ -53,8 +55,8 @@ function clearCalculator() { // clear calculator and client-side memory
 }
 
 // clear various DOM elements
-function clearHighlight() { $('.calc-button').removeClass('selected') }
-function clearCalcDisplay() { $( '#number-display' ).empty() }
+function clearHighlight() { $('.calc-button').removeClass('selected') };
+function clearCalcDisplay() { $( '#number-display' ).empty() };
 function clearResults() { $( '#results-history' ).empty() };
 
 function processValue() { // process button press
@@ -104,32 +106,7 @@ function handleOperator(btn, operator) { // check if operator can be added to eq
     handleError('operand');
   }
 
-}
-
-function handleEquals() {  // push operand to array
-
-  if (equationToSend.length < 2) { // if equation is incomplete, throw error
-    handleError('operand');
-    return false;
-  } else if (!pushOperand()) { // if operand is invalid, reject equation
-    return false;
-  } else {
-    sendEquals(); // the equation has passed the vibe check!
-  }
-
-}
-
-function handleError(errorString) { // display errors
-
-  const errors = {
-    'operand': 'Sorry: this calculator only handles two values and one operator.',
-    'blank': 'You must enter a value.',
-    'length': 'Inputs cannot be more than seven digits long.'
-  }
-
-  console.log('error!', errors[errorString]);
-  alert(errors[errorString]);
-}
+} // end handleOperator
 
 function pushOperand() { // determines end of the first operand
   let currentNum = $( '#number-display' ).text();
@@ -145,7 +122,20 @@ function pushOperand() { // determines end of the first operand
     return true;
   }
 
-}
+} // end pushOperand
+
+function handleEquals() {  // push operand to array
+
+  if (equationToSend.length < 2) { // if equation is incomplete, throw error
+    handleError('operand');
+    return false;
+  } else if (!pushOperand()) { // if operand is invalid, reject equation
+    return false;
+  } else {
+    sendEquals(); // the equation has passed the vibe check!
+  }
+
+} // end handleEquals
 
 function sendEquals() { // equation is good - send it to the server
 
@@ -170,7 +160,19 @@ function sendEquals() { // equation is good - send it to the server
     console.log('post error in sendEquals()');
   })
 
-}
+} // end sendEquals
+
+function handleError(errorString) { // display errors
+
+  const errors = {
+    'operand': 'Sorry: this calculator only handles two values and one operator.',
+    'blank': 'You must enter a value.',
+    'length': 'Inputs cannot be more than seven digits long.'
+  }
+
+  console.log('error!', errors[errorString]);
+  alert(errors[errorString]);
+} // end handleError
 
 function getLatest() { // get most recent completed equation
   $.ajax({
@@ -182,7 +184,7 @@ function getLatest() { // get most recent completed equation
   }).catch( (err) => {
     console.log('what!', err);
   })
-}
+} // end getLatest
 
 function appendResultToCalc(object) { // display latest result on screen
   clearCalcDisplay();
@@ -192,7 +194,7 @@ function appendResultToCalc(object) { // display latest result on screen
 
   clearCalculator();
   getStuff(); // get and render DOM
-}
+} // end appendResultToCalc
 
 function deleteHistory() { // clear equation history from DOM and server
   // ajax delete request
@@ -205,4 +207,4 @@ function deleteHistory() { // clear equation history from DOM and server
   }).catch( (err) => {
     console.log('delete request error in deleteHistory()');
   })
-}
+} // end deleteHistory
