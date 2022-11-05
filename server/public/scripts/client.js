@@ -2,15 +2,16 @@ $( document ).ready(onReady)
 
 function onReady() {
   console.log('jQ');
-  getGlobalVars();
+
+  resultDisplay = false;
   getStuff();
   clearCalculator();
 
-
-  $('#submit').on('click', sendEquation)
+  // $('#submit').on('click', sendEquation)
 
   // event listeners for buttons
-  $('.calc-button').on('click', processValue);
+  $('.calc-button:not(#equals-btn)').on('click', processValue);
+  $('#equals-btn').on('click', handleEquals);
 }
 
 function render(arr) {
@@ -32,68 +33,84 @@ function getStuff() {
   })
 }
 
-function sendEquation() {
+// function sendEquation() {
 
-  $.ajax({
-    method: 'POST',
-    url: '/math',
-    data: {
-      num1: $('#num1').val(),
-      num2: $('#num2').val(),
-      oper: $('#operator').val()
-    }
-  }).then((res) => {
-    console.log('post request successful!');
-    clearInputs();
-    getStuff();
-  }).catch((err) => {
-    console.log('bro whatttt');
-  })
+//   $.ajax({
+//     method: 'POST',
+//     url: '/math',
+//     data: {
+//       num1: $('#num1').val(),
+//       num2: $('#num2').val(),
+//       oper: $('#operator').val()
+//     }
+//   }).then((res) => {
+//     console.log('post request successful!');
+//     clearInputs();
+//     getStuff();
+//   }).catch((err) => {
+//     console.log('bro whatttt');
+//   })
 
-}
-
-function getGlobalVars() {
-  let equationToSend = [];
-  let firstOperand = true;
-}
+// }
 
 function clearCalculator() {
 
   equationToSend = [];
   firstOperand = true;
-  $( '#number-display' ).empty();
+  clearHighlight();
   
 }
+
+function clearHighlight() { $('.calc-button').removeClass('selected') }
+
+function clearCalcDisplay() { $( '#number-display' ).empty() }
 
 function processValue() {
 
   let val = $( this ).data('math'); // get button data
+
   if (val == undefined) { return false }; // filter out ghost buttons
-  if (val == 'clear') { // clears entire operation
-    clearCalculator();
-    return false; // exit function
-  }
-  
-  if (val == '=') {
-    if (pushOperand()) { // if operand is not blank
-      sendEquals(); // time to do the math!
-    }
-    return false; // exit function
+
+  if (val == 'clear') { // if AC button is pressed:
+    // clear entire operation and display
+    clearCalculator(); 
+    clearCalcDisplay();
+    return false; // immediately exit processValue()
   }
 
-  // test if value is an operator
+  // if value is an operator:
   if (/[*+/-]/.test(val)) {
-    console.log('operator button clicked');
 
     // if this is our first operation, and current value isn't blank
     if (firstOperand && $( '#number-display' ).text() !== '') {
+      $( this ).addClass('selected');
       handleOperator(val); // handle operator
     } else { // otherwise, throw error
       handleError('operand');
     }
 
-  } else { // it's a number.
-    $('#number-display' ).append(val);
+  } else { // only possibility left is a number.
+    
+    if (resultDisplay) { // if we're still displaying the last result or operand,
+      clearCalcDisplay(); // clear the display
+      resultDisplay = false; // don't do this again until next result
+    }
+
+    $('#number-display' ).append(val); // append number to the calc display
+
+  }
+}
+
+function handleEquals() {
+  // push operand to array
+  
+  // equals can only work if there are two values in the equation array
+  // (an operand and an operator)
+  
+  if (!pushOperand() || equationToSend.length < 2) {
+    handleError('operand');
+  } else {
+    sendEquals();
   }
 
 }
@@ -102,19 +119,21 @@ function handleOperator(operator) {
   pushOperand(); // push value to equation
   equationToSend.push(operator); // push operator to equation
   firstOperand = false; // prevent further operators
+  resultDisplay = true;
 
   console.log(equationToSend);
 }
 
 function handleError(errorCode) {
   const errors = {
-    'operand': 'This calculator handles two values and one operator - no more, no less.'
+    'operand': 'This calculator handles two values and one operator - no more, no less.',
+    'blank': 'You must enter a value.'
   }
   console.log('error!', errors[errorCode]);
   alert(errors[errorCode]);
 }
 
-function pushOperand() { // determines end of the first value
+function pushOperand() { // determines end of the first operand
   let currentNum = $( '#number-display' ).text();
 
   if (currentNum == '') {
@@ -122,9 +141,9 @@ function pushOperand() { // determines end of the first value
     return false;
   } else {
     equationToSend.push(currentNum);
-    $( '#number-display' ).empty();
     return true;
   }
+
 }
 
 function sendEquals() {
@@ -134,8 +153,8 @@ function sendEquals() {
 
   let fullEquation = {  
     num1: equationToSend[0],
-    num2: equationToSend[1],
-    oper: equationToSend[2]
+    num2: equationToSend[2], // gets sent in this order
+    oper: equationToSend[1]
   }
 
   // app post request
@@ -168,7 +187,13 @@ function getLatest() {
 }
 
 function appendResultToCalc(object) {
-  console.log('appendresulttocalc:', object.result);
+  clearCalcDisplay();
+
+  $( '#number-display' ).append(object.result); // append result to calc display
+  resultDisplay = true; // calc display will not wipe on calc reset, but on first append
+
+  clearCalculator();
+  getStuff(); // get and render DOM
 }
 
 function clearInputs() {

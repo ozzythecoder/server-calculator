@@ -48,7 +48,6 @@ app.post('/math', (req, res) => {
 app.post('/calc', (req, res) => {
   
   let mathObj = req.body;
-  console.log(mathObj.num1);
 
   mathObj.result = doTheMath[mathObj.oper](Number(mathObj.num1), Number(mathObj.num2));
   resultHistory.push(mathObj)
@@ -57,7 +56,6 @@ app.post('/calc', (req, res) => {
 
 app.get('/latest', (req, res) => {
   let lastResult = resultHistory[resultHistory.length - 1]
-  console.log(lastResult);
   res.send(lastResult);
 })
 
