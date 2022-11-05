@@ -15,6 +15,7 @@ let resultHistory = [{
   oper: '+',
   result: 6
 }];
+
 const doTheMath = { // this will handle mathematical operations
   '+': function(a, b) { return a + b },
   '-': function(a, b) { return a - b },
@@ -25,7 +26,6 @@ const doTheMath = { // this will handle mathematical operations
 // handle GET request - return array of previous operations
 app.get('/print', (req, res) => {
   res.send(resultHistory);
-  console.log(resultHistory[resultHistory.length - 1].result); // expecting 6
 })
 
 app.post('/math', (req, res) => {
@@ -49,8 +49,13 @@ app.post('/calc', (req, res) => {
   
   let mathObj = req.body;
 
-  mathObj.result = doTheMath[mathObj.oper](Number(mathObj.num1), Number(mathObj.num2))
+  // operation is performed:
+  let longRes = doTheMath[mathObj.oper](Number(mathObj.num1), Number(mathObj.num2))
 
+  console.log('long result is', longRes);
+
+  mathObj.result = longRes.toString().substring(0,9) // limit result to 9 chars
+  console.log('short result is', mathObj.result);
   resultHistory.push(mathObj)
   res.sendStatus(200);
 })
