@@ -108,10 +108,10 @@ function handleOperator(btn, operator) { // check if operator can be added to eq
 
 function handleEquals() {  // push operand to array
 
-  if (!pushOperand()) { // if operand is invalid, reject equation
-    return false;
-  } else if (equationToSend.length < 2) { // if equation is incomplete, throw error
+  if (equationToSend.length < 2) { // if equation is incomplete, throw error
     handleError('operand');
+    return false;
+  } else if (!pushOperand()) { // if operand is invalid, reject equation
     return false;
   } else {
     sendEquals(); // the equation has passed the vibe check!
@@ -119,7 +119,7 @@ function handleEquals() {  // push operand to array
 
 }
 
-function handleError(errorString) {
+function handleError(errorString) { // display errors
 
   const errors = {
     'operand': 'Sorry: this calculator only handles two values and one operator.',
@@ -149,9 +149,6 @@ function pushOperand() { // determines end of the first operand
 
 function sendEquals() { // equation is good - send it to the server
 
-  console.log('in sendEquals');
-  console.log('equation:', equationToSend);
-
   let fullEquation = {  
     num1: equationToSend[0],
     num2: equationToSend[2], // gets sent in this order
@@ -166,16 +163,16 @@ function sendEquals() { // equation is good - send it to the server
     url: '/calc',
     data: fullEquation
   }).then( (res) => {
-    console.log('post made!');
+    console.log('equation posted to server');
     getLatest();
     getStuff();
   }).catch( (err) => {
-    console.log('fucky wucky');
+    console.log('post error in sendEquals()');
   })
 
 }
 
-function getLatest() {
+function getLatest() { // get most recent completed equation
   $.ajax({
     method: 'GET',
     url: '/latest'
@@ -187,7 +184,7 @@ function getLatest() {
   })
 }
 
-function appendResultToCalc(object) {
+function appendResultToCalc(object) { // display latest result on screen
   clearCalcDisplay();
 
   $( '#number-display' ).append(object.result); // append result to calc display
@@ -197,7 +194,7 @@ function appendResultToCalc(object) {
   getStuff(); // get and render DOM
 }
 
-function deleteHistory() {
+function deleteHistory() { // clear equation history from DOM and server
   // ajax delete request
   $.ajax({
     method: 'DELETE',
@@ -206,6 +203,6 @@ function deleteHistory() {
     console.log('deleted history');
     getStuff();
   }).catch( (err) => {
-    console.log('why do u hate me');
+    console.log('delete request error in deleteHistory()');
   })
 }
