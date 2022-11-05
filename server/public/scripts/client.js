@@ -7,42 +7,24 @@ function onReady() {
   getStuff();
   clearCalculator();
 
-  // $('#submit').on('click', sendEquation)
-
-  // event listeners for buttons
+  // event listeners for calc buttons
   $('.calc-button:not(#equals-btn)').on('click', processValue);
   $('#equals-btn').on('click', handleEquals);
+
+  // listener for delete history button
   $('#delete-history-btn').on('click', deleteHistory);
 }
 
-
-
-// function sendEquation() {
-
-//   $.ajax({
-//     method: 'POST',
-//     url: '/math',
-//     data: {
-//       num1: $('#num1').val(),
-//       num2: $('#num2').val(),
-//       oper: $('#operator').val()
-//     }
-//   }).then((res) => {
-//     console.log('post request successful!');
-//     clearInputs();
-//     getStuff();
-//   }).catch((err) => {
-//     console.log('bro whatttt');
-//   })
-
-// }
-
 function render(arr) {
+  let el = $( '#results-history' );
+
   clearResults();
+
   for (let equation of arr) {
-    $( '#results-history' ).prepend(`
+    el.prepend(`
       <p>${equation.num1} ${equation.oper} ${equation.num2} = ${equation.result}</p>
   `)}
+
 }
 
 function getStuff() {
@@ -55,8 +37,6 @@ function getStuff() {
     console.log('butts :c');
   })
 }
-
-
 
 function clearCalculator() {
 
@@ -72,39 +52,33 @@ function clearCalcDisplay() { $( '#number-display' ).empty() }
 
 function processValue() {
 
+  let btn = $( this );
   let val = $( this ).data('math'); // get button data
+  let operRegex = /[*+/-]/
 
-  if (val == undefined) { return false }; // filter out ghost buttons
+  // filter out ghost buttons
+  if (val == undefined) {
+    return false;
 
-  if (val == 'clear') { // if AC button is pressed:
-    // clear entire operation and display
-    clearCalculator(); 
-    clearCalcDisplay();
+  } else if (val == 'clear') { // if AC button is pressed:
+    clearCalculator(); // clear entire operation 
+    clearCalcDisplay(); // and display
     return false; // immediately exit processValue()
+
+  } else if (operRegex.test(val)) { // if value is an operator:
+    handleOperator(btn, val); // handle operator
+
+  } else { // only possibility left is a number:
+
+  if (resultDisplay) { // if we're still displaying the last result or operand,
+    clearCalcDisplay(); // clear the display
+    resultDisplay = false; // don't do this again until next result/operand
   }
 
-  // if value is an operator:
-  if (/[*+/-]/.test(val)) {
+  $('#number-display' ).append(val); // append number to the calc display
 
-    // if this is our first operation, and current value isn't blank
-    if (firstOperand && $( '#number-display' ).text() !== '') {
-      $( this ).addClass('selected');
-      handleOperator(val); // handle operator
-    } else { // otherwise, throw error
-      handleError('operand');
-    }
-
-  } else { // only possibility left is a number.
-    
-    if (resultDisplay) { // if we're still displaying the last result or operand,
-      clearCalcDisplay(); // clear the display
-      resultDisplay = false; // don't do this again until next result
-    }
-
-    $('#number-display' ).append(val); // append number to the calc display
-
-  }
-}
+  } // end else if
+} // end processValue()
 
 function handleEquals() {
   // push operand to array
@@ -120,11 +94,21 @@ function handleEquals() {
 
 }
 
-function handleOperator(operator) {
-  pushOperand(); // push value to equation
-  equationToSend.push(operator); // push operator to equation
-  firstOperand = false; // prevent further operators
-  resultDisplay = true;
+function handleOperator(btn, operator) {
+  console.log(btn, operator);
+  
+  // if the current value is not blank, and we haven't yet used an operator
+  if (firstOperand && $( '#number-display' ).text() !== '') {
+
+    pushOperand(); // push the non-blank value to equation
+    btn.addClass('selected'); // highlight button
+    equationToSend.push(operator); // push operator to equation
+    firstOperand = false; // prevent further operators
+    resultDisplay = true; // clear display on next number input
+
+  } else { // otherwise, throw error
+    handleError('operand');
+  }
 
   console.log(equationToSend);
 }
@@ -142,7 +126,7 @@ function pushOperand() { // determines end of the first operand
   let currentNum = $( '#number-display' ).text();
 
   if (currentNum == '') {
-    handleError('blank')
+    handleError('blank');
     return false;
   } else {
     equationToSend.push(currentNum);
