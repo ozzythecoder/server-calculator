@@ -18,43 +18,50 @@ function onReady() {
 function render(arr) {
   let el = $( '#results-history' );
 
+  const cuterOperators = { // adds the objectively cuter ÷ and × symbols
+    '+': '+',
+    '-': '-',
+    '*': '&#215;',
+    '/': '&#247;'
+  }
+
   clearResults();
 
   for (let equation of arr) {
     el.prepend(`
-      <p>${equation.num1} ${equation.oper} ${equation.num2} = ${equation.result}</p>
+      <p>${equation.num1} ${cuterOperators[equation.oper]} ${equation.num2} = ${equation.result}</p>
   `)}
 
 }
 
-function getStuff() {
+function getStuff() { // get equation history from server
+
   $.ajax({
     method: 'GET',
     url: '/print'
   }).then( (res) => {
     render(res);
   }).catch( (err) => {
-    console.log('butts :c');
+    console.log('render error!');
   })
 }
 
-function clearCalculator() {
-
+function clearCalculator() { // clear calculator and client-side memory
   equationToSend = [];
   firstOperand = true;
   clearHighlight();
-  
 }
 
+// clear various DOM elements
 function clearHighlight() { $('.calc-button').removeClass('selected') }
-
 function clearCalcDisplay() { $( '#number-display' ).empty() }
+function clearResults() { $( '#results-history' ).empty() };
 
-function processValue() {
+function processValue() { // process button press
 
   let btn = $( this );
   let val = $( this ).data('math'); // get button data
-  let operRegex = /[*+/-]/
+  let operRegex = /[*+/-]/ // to test operator
 
   // filter out ghost buttons
   if (val == undefined) {
@@ -66,7 +73,7 @@ function processValue() {
     return false; // immediately exit processValue()
 
   } else if (operRegex.test(val)) { // if value is an operator:
-    handleOperator(btn, val); // handle operator
+    handleOperator(btn, val); // handle operator & button highlight
 
   } else { // only possibility left is a number:
 
@@ -80,27 +87,14 @@ function processValue() {
   } // end else if
 } // end processValue()
 
-function handleEquals() {
-  // push operand to array
+function handleOperator(btn, operator) { // check if operator can be added to equation
   
-  // equals can only work if there are two values in the equation array
-  // (an operand and an operator)
-  
-  if (!pushOperand() || equationToSend.length < 2) {
-    handleError('operand');
-  } else {
-    sendEquals();
-  }
+  if (!pushOperand) { return false }; // check if operand is invalid
 
-}
-
-function handleOperator(btn, operator) {
-  console.log(btn, operator);
-  
-  // if the current value is not blank, and we haven't yet used an operator
+  // if the current value is not blank, and we haven't yet used an operator:
   if (firstOperand && $( '#number-display' ).text() !== '') {
 
-    pushOperand(); // push the non-blank value to equation
+    pushOperand();
     btn.addClass('selected'); // highlight button
     equationToSend.push(operator); // push operator to equation
     firstOperand = false; // prevent further operators
@@ -110,16 +104,31 @@ function handleOperator(btn, operator) {
     handleError('operand');
   }
 
-  console.log(equationToSend);
 }
 
-function handleError(errorCode) {
-  const errors = {
-    'operand': 'This calculator handles two values and one operator - no more, no less.',
-    'blank': 'You must enter a value.'
+function handleEquals() {  // push operand to array
+
+  if (!pushOperand()) { // if operand is invalid, reject equation
+    return false;
+  } else if (equationToSend.length < 2) { // if equation is incomplete, throw error
+    handleError('operand');
+    return false;
+  } else {
+    sendEquals(); // the equation has passed the vibe check!
   }
-  console.log('error!', errors[errorCode]);
-  alert(errors[errorCode]);
+
+}
+
+function handleError(errorString) {
+
+  const errors = {
+    'operand': 'Sorry: this calculator only handles two values and one operator.',
+    'blank': 'You must enter a value.',
+    'length': 'Inputs cannot be more than seven digits long.'
+  }
+
+  console.log('error!', errors[errorString]);
+  alert(errors[errorString]);
 }
 
 function pushOperand() { // determines end of the first operand
@@ -128,6 +137,9 @@ function pushOperand() { // determines end of the first operand
   if (currentNum == '') {
     handleError('blank');
     return false;
+  } else if (currentNum.length > 7) {
+    handleError('length');
+    return false;
   } else {
     equationToSend.push(currentNum);
     return true;
@@ -135,7 +147,7 @@ function pushOperand() { // determines end of the first operand
 
 }
 
-function sendEquals() {
+function sendEquals() { // equation is good - send it to the server
 
   console.log('in sendEquals');
   console.log('equation:', equationToSend);
@@ -197,10 +209,3 @@ function deleteHistory() {
     console.log('why do u hate me');
   })
 }
-
-function clearInputs() {
-  $( 'input' ).val('');
-  $( 'select' ).val('');
-}
-
-function clearResults() { $( '#results-history' ).empty() };
