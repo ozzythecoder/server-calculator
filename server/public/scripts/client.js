@@ -18,7 +18,7 @@ function render(arr) {
   clearResults();
   for (let equation of arr) {
     $( '#results-history' ).prepend(`
-      ${equation.num1} ${equation.oper} ${equation.num2} = ${equation.result}<br>
+      <p>${equation.num1} ${equation.oper} ${equation.num2} = ${equation.result}</p>
   `)}
 }
 
