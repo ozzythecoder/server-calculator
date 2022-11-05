@@ -22,7 +22,7 @@ body, h1, p {
 }
 
 h1 {
-  margin-left: 10%;
+  text-align: center;
 }
 
 main {
@@ -80,6 +80,8 @@ button:active {
 
 #results-history {
   line-height: 1.8em;
+  overflow-y: scroll;
+  max-height: 350px;
 }
 
 #calc-display {
