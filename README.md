@@ -23,7 +23,7 @@ I was tasked to create a calculator that accepts input on the client side, perfo
 
 - This calculator can handle simple arithmetic with two operands up of to seven digits, and results of up to nine digits.
 - The history of all your calculations will be displayed to the right. Press 'Delete' to clear the history.
-- You can chain multiple operations together one at a time by simply continuing with the next operator after clicking enter.
+- You can chain multiple operations together one at a time by simply continuing with the next operator after clicking equals.
   - For example: to perform 5 + 4 - 1, click 5 + 4, click equals (=) to display the result, and then click minus (-) to begin the next operation.
 - Note: The calculator will not accept more than one operation at a time. To change to a different operator, press AC and begin the equation from scratch.
 
