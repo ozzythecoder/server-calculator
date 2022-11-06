@@ -9,12 +9,7 @@ let bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // set up global variables
-let resultHistory = [
-  {num1: 5,
-  num2: 7,
-  oper: '+',
-  result: 12}
-];
+let resultHistory = [];
 
 const doTheMath = { // this will handle mathematical operations
   '+': function(a, b) { return a + b },
